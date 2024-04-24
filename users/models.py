@@ -74,7 +74,7 @@ class User(AbstractUser):
         CodeVerification.objects.create(
             auth_type=auth_type,
             code=code,
-            user=self
+            user=self.id
             )
         return code
 
@@ -92,9 +92,8 @@ class CodeVerification(models.Model):
 
     def __str__(self):
         return str(self.user.__str__())
-
     def save(self, *args, **kwargs):
-        if self.auth_type == VIA_EMAIL: 
+        if self.auth_type == VIA_EMAIL:
             self.expiration_time = datetime.now() + timedelta(minutes=2)
         else:
             self.expiration_time = datetime.now() + timedelta(minutes=2)
