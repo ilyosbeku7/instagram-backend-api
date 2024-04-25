@@ -8,25 +8,25 @@ from .telegram_send_code import send_sms
 class SignUpSerializer(serializers.Serializer):
     phone_or_email=serializers.CharField(required=True, write_only=True)
 
-    # def validate_phone_or_email(self, value):
-    #     if is_valid_phone(value):
-    #         if User.objects.filter(phone_number=value).exists():
+    def validate_phone_or_email(self, value):
+        if is_valid_phone(value):
+            if User.objects.filter(phone_number=value).exists():
 
-    #            data={
-    #             'status': False,
-    #             'message': "phone number already exists"
-    #          }
-    #         raise ValidationError(data)
+               data={
+                'status': False,
+                'message': "phone number already exists"
+             }
+            raise ValidationError(data)
 
-    #     elif is_valid_email(value):
-    #         if User.objects.filter(email=value).exists():
+        elif is_valid_email(value):
+            if User.objects.filter(email=value).exists():
 
-    #            data={
-    #             'status': False,
-    #             'message': "Email already exists"
-    #          }
-    #         raise ValidationError(data)
-    #     return value
+               data={
+                'status': False,
+                'message': "Email already exists"
+             }
+            raise ValidationError(data)
+        return value
         
          
     
@@ -75,38 +75,41 @@ class SignUpSerializer(serializers.Serializer):
         }
         return data
     
-class RegisterSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.Serializer):
     first_name=serializers.CharField(required=True,   min_length=4)
-    confirm_password=serializers.CharField(required=True,   min_length=4)
+    confirm_password=serializers.CharField(required=True,   min_length=4, write_only=True),
+    password=serializers.CharField(required=True,   min_length=4, write_only=True)
 
     class Meta:
         model=User
         fields=['username', 'first_name', 'last_name', 'password', 'confirm_password']
+    
     def validate(self, attrs):
-        confirm_password=attrs.get('confirm_password')
-        password=attrs.get('password')
-        username=attrs.get('username')
+        confirm_password = attrs.get('confirm_password')
+        password = attrs.get('password')
+        username = attrs.get('username')
 
         if password != confirm_password:
-            data={
-                    'status': False,
-                    'message': "Password don't match",
-                } 
-        
-            raise ValidationError(data)
+                data={
+                'status': True,
+                'message': "Password dont match",
+                        }
+                raise ValidationError(data)
+            
 
         if not username.isalpha():
             data={
-                    'status': False,
-                    'message': "Username faqat harflardan iborat bo'lishi lozim",
-                } 
+                'status': True,
+                'message': "usernam faqat harflardan iborat bolsin",
+                        }
             raise ValidationError(data)
-        
+        return attrs
+    
     def update(self, instance, validated_data):
             instance.username=validated_data.get('username', instance.username)        
             instance.first_name=validated_data.get('first_name', instance.first_name)        
             instance.last_name=validated_data.get('last_name', instance.last_name)        
-            instance.set_password(password=validated_data.get('password') )    
+            instance.set_password(validated_data.get('password') )    
             instance.save()
 
             return instance  

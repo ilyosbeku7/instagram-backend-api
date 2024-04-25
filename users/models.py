@@ -35,17 +35,16 @@ class User(AbstractUser):
         return self.username
    
 
-    def check_username(self):
+    def clean_username(self):
         if not self.username:
-            temp_username = f'instagram-{uuid.uuid4().__str__().split("-")[-1]}' 
-            while User.objects.filter(username=temp_username):
-                temp_username = f"{temp_username}{random.randint(0,9)}"
+            temp_username = f'instagram-{str(uuid.uuid4()).split("-")[-1]}' 
+            while User.objects.filter(username=temp_username).exists():
+                temp_username = f"instagram-{str(uuid.uuid4()).split('-')[-1]}{random.randint(0,9)}"
             self.username = temp_username
-
 
     def clean_password(self):
         if not self.password:
-            self.password = f'instagram-{uuid.uuid4().__str__().split("-")[-1]}' 
+            self.password = f'instagram-{str(uuid.uuid4()).split("-")[-1]}' 
            
 
     def hashing_password(self):
@@ -64,7 +63,7 @@ class User(AbstractUser):
         super(User, self).save(*args, **kwargs)
 
     def clean(self):
-        self.check_username()
+        self.clean_username()
         self.clean_password()
         self.hashing_password()
 
@@ -86,7 +85,7 @@ class CodeVerification(models.Model):
     )
     code = models.CharField(max_length=5)
     auth_type = models.CharField(max_length=31, choices=AUTH_TYPE)
-    user = models.ForeignKey('users.User', models.CASCADE, related_name='verify_codes')
+    user = models.ForeignKey('users.User', models.CASCADE, related_name='verifications_code')
     expiration_time = models.DateTimeField(null=True)
     is_verified = models.BooleanField(default=False)
 

@@ -13,7 +13,7 @@ from rest_framework.generics import CreateAPIView
 
 class SignUpView(APIView):
    
-  
+    
     def post(self, request):
         serializer=SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -23,7 +23,7 @@ class SignUpView(APIView):
 
 class VerifyCodeApiView(APIView):
     
-
+    permission_classes=(IsAuthenticated,)
     def post(self, request):
         user=request.user
         if 'code' not in request.data:
@@ -32,15 +32,11 @@ class VerifyCodeApiView(APIView):
                 "message": "Code field is required"
             }
 
-            return Response (data, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
         
         code=request.data['code']
-        if len(code)!=5:
-             data={
-                'status': False,
-                "message": "Code uzunligi 5 ga teng bolishi lozim "
-            }
-        result=user.verify_codes.filter(is_verified=False, expiration_time__gta=datetime.now(), code=code).first()
+        print(user)
+        result=user.verifications_code.filter(is_verified=False, expiration_time__gte=datetime.now(), code=code).first()
 
         if result is None:
             data={
@@ -54,23 +50,24 @@ class VerifyCodeApiView(APIView):
         result.is_verified=True
         result.save()
 
-        if user.auth_step==NEW:
+        if user.auth_status==NEW:
 
-            user.auth_step=CODE_VERIFIED
+            user.auth_status=CODE_VERIFIED
             user.save()
 
         data={
             'status':True,
             'message': "Kod muvaffaqiyatli qabul qilindi",
-            'token':token
+            # 'token':token
         }
 
         return Response (data, status=status.HTTP_200_OK)
 
 class RegisterApiView(APIView):
-   
+    permission_classes=(IsAuthenticated,)
     def put(self, request):
-        serializer=RegisterSerializer(data=request.data)
+        user=request.user
+        serializer=RegisterSerializer(user, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
