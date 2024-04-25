@@ -4,6 +4,9 @@ from .regex_check import is_valid_email, is_valid_phone
 from .models import VIA_EMAIL, VIA_PHONE
 from rest_framework.validators import ValidationError
 from .telegram_send_code import send_sms
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate
+
 
 class SignUpSerializer(serializers.Serializer):
     phone_or_email=serializers.CharField(required=True, write_only=True)
@@ -89,9 +92,9 @@ class RegisterSerializer(serializers.Serializer):
         password = attrs.get('password')
         username = attrs.get('username')
 
-        if password != confirm_password:
-                data={
-                'status': True,
+        if confirm_password != password:
+                data={  
+                'status': False,
                 'message': "Password dont match",
                         }
                 raise ValidationError(data)
@@ -113,4 +116,9 @@ class RegisterSerializer(serializers.Serializer):
             instance.save()
 
             return instance  
-            
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
+    

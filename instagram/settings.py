@@ -105,7 +105,10 @@ REST_FRAMEWORK = {
     )
 
 }
-
+REST_FRAMEWORK = {
+    # ...
+    'DEFAULT_TOKEN_MODEL': 'path.to.your.CustomToken'
+}
 ROOT_URLCONF = 'instagram.urls'
 
 TEMPLATES = [
