@@ -66,8 +66,8 @@ class SignUpSerializer(serializers.Serializer):
 
         return validated_data
     
-    def to_representation(self, str):
-        user=str.user
+    def to_representation(self, instance):
+        user=instance['user']
         data={
             'status': True,
             'message': "Code send your contact",

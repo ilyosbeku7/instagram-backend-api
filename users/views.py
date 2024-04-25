@@ -2,11 +2,13 @@ from django.shortcuts import render
 from .serializers import SignUpSerializer, RegisterSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from .models import CodeVerification
 from .models import CODE_VERIFIED, NEW, DONE
 from datetime import datetime 
+from rest_framework.generics import CreateAPIView
 # Create your views here.
 
 class SignUpView(APIView):
@@ -20,7 +22,7 @@ class SignUpView(APIView):
         return Response(serializer.data)
 
 class VerifyCodeApiView(APIView):
-    permission_classes=(IsAuthenticated, )
+    
 
     def post(self, request):
         user=request.user
@@ -66,8 +68,7 @@ class VerifyCodeApiView(APIView):
         return Response (data, status=status.HTTP_200_OK)
 
 class RegisterApiView(APIView):
-    permission_classes=(IsAuthenticated, )
-
+   
     def put(self, request):
         serializer=RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
